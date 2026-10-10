@@ -99,6 +99,7 @@ def run_benchmark(train_size: int = 48, test_size: int = 64) -> dict:
             assert (not any(result.signature)) == solution_exists
     return {
         "description": "Fixed policy class ERM, topology-only training, disjoint seeds",
+        "memory": json.loads(ghost.to_json()),
         "training_instances": train_size,
         "policy": ghost.selected_policy,
         "train_normalized_losses": ghost.normalized_losses,
@@ -112,5 +113,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--train", type=int, default=48)
     parser.add_argument("--test", type=int, default=64)
+    parser.add_argument("--memory-out", default=None, help="Path to save learned JSON memory")
     args = parser.parse_args()
-    print(json.dumps(run_benchmark(args.train, args.test), indent=2, sort_keys=True))
+    report = run_benchmark(args.train, args.test)
+    if args.memory_out:
+        from pathlib import Path
+        Path(args.memory_out).write_text(
+            json.dumps(report["memory"], indent=2, sort_keys=True) + "\\n", encoding="utf-8"
+        )
+    print(json.dumps(report, indent=2, sort_keys=True))
