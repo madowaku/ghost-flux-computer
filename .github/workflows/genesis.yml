@@ -1,0 +1,22 @@
+name: GFC Ghost Genesis benchmark
+on:
+  push:
+    branches:
+      - research/gfc-v0.5-ghost-genesis
+  workflow_dispatch:
+jobs:
+  genesis:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run held-out evolutionary readout benchmark
+        run: python benchmark_genesis.py --train-per-family 12 --test-per-family 32 --generations 12 --population 20 --memory-out genesis_memory.json | tee genesis_results.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ghost-genesis-experiment
+          path: |
+            genesis_memory.json
+            genesis_results.json
