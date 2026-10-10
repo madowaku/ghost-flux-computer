@@ -14,7 +14,7 @@ from random import Random
 from time import perf_counter
 from typing import Iterable
 
-from gfc import Edge, Readout, _validate, signature
+from gfc import Edge, Readout, _validate, signature, certify
 from ghost_memory import POLICIES, policy_readout
 
 GENOME_SCHEMA = 1
@@ -295,7 +295,11 @@ def evaluate_genesis(
     novel_layouts = better_than_six = better_than_bfs = 0
     count = 0
     inference_seconds = {key: 0.0 for key in names}
+    inference_seconds["direct_certify"] = 0.0
     for n, edges in graphs:
+        t0 = perf_counter()
+        direct = certify(n, edges)
+        inference_seconds["direct_certify"] += perf_counter() - t0
         prep = prepare(n, edges)
         tie = rng.randrange(1 << 63)
         t0 = perf_counter()
@@ -324,6 +328,7 @@ def evaluate_genesis(
         else:
             meta = baseline["hub"]
 
+        assert (not any(created.signature)) == direct.satisfiable
         costs = {
             "genesis": created.cost,
             "bfs": bfs.cost,
@@ -367,6 +372,7 @@ def evaluate_genesis(
         "warnings": (
             "Cycle visits are a proxy; timings are single-pass Python estimates. "
             "The oracle6 compares every policy on test data and is NOT deployable. "
-            "Timing for oracle6 includes all six policy readouts; each other timing is individual."
+            "Timing for oracle6 includes all six policy readouts; reported timings "
+            "exclude graph preparation/features and should not be compared as end-to-end."
         ),
     }
