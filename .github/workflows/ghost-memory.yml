@@ -1,0 +1,22 @@
+name: Ghost Memory experiment
+on:
+  push:
+    branches:
+      - research/gfc-v0.3-ghost-memory
+  workflow_dispatch:
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run held-out benchmark and persist memory
+        run: python benchmark_memory.py --train 48 --test 64 --memory-out ghost_memory.json | tee benchmark_results.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ghost-memory-experiment
+          path: |
+            ghost_memory.json
+            benchmark_results.json
