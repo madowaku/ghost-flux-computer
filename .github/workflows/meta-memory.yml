@@ -1,0 +1,22 @@
+name: GFC Meta-Memory experiment
+on:
+  push:
+    branches:
+      - research/gfc-v0.4-meta-memory
+  workflow_dispatch:
+jobs:
+  meta-benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run reproducible conditional-memory experiment
+        run: python benchmark_meta.py --train-per-family 60 --test-per-family 80 --memory-out meta_memory.json | tee meta_results.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ghost-meta-memory-results
+          path: |
+            meta_memory.json
+            meta_results.json
