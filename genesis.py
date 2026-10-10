@@ -294,7 +294,7 @@ def evaluate_genesis(
     wins_hub = ties_hub = losses_hub = 0
     novel_layouts = better_than_six = better_than_bfs = 0
     count = 0
-    inference_seconds = {key: 0.0 for key in names if key != "oracle6"}
+    inference_seconds = {key: 0.0 for key in names}
     for n, edges in graphs:
         prep = prepare(n, edges)
         tie = rng.randrange(1 << 63)
@@ -304,12 +304,19 @@ def evaluate_genesis(
         t0 = perf_counter()
         bfs = bfs_readout(prep, tie)
         inference_seconds["bfs"] += perf_counter() - t0
+        six_start = perf_counter()
         t0 = perf_counter()
-        baseline = {
-            p: policy_readout(n, edges, p, tie)
-            for p in POLICIES
-        }
+        random_readout = policy_readout(n, edges, "random", tie)
         inference_seconds["random"] += perf_counter() - t0
+        t0 = perf_counter()
+        hub_readout = policy_readout(n, edges, "hub", tie)
+        inference_seconds["hub"] += perf_counter() - t0
+        baseline = {"random": random_readout, "hub": hub_readout}
+        baseline.update({
+            p: policy_readout(n, edges, p, tie)
+            for p in POLICIES if p not in ("random", "hub")
+        })
+        inference_seconds["oracle6"] += perf_counter() - six_start
         if meta_memory is not None:
             t0 = perf_counter()
             meta = policy_readout(n, edges, meta_memory.choose(n, edges), tie)
@@ -333,7 +340,11 @@ def evaluate_genesis(
             ties_hub += 1
         else:
             losses_hub += 1
-        novel_layouts += int(all(created.cycles != b.cycles for b in baseline.values()))
+        canonical = frozenset(frozenset(c) for c in created.cycles)
+        novel_layouts += int(all(
+            canonical != frozenset(frozenset(c) for c in b.cycles)
+            for b in baseline.values()
+        ))
         better_than_six += int(created.cost < costs["oracle6"])
         better_than_bfs += int(created.cost < bfs.cost)
         count += 1
@@ -356,6 +367,6 @@ def evaluate_genesis(
         "warnings": (
             "Cycle visits are a proxy; timings are single-pass Python estimates. "
             "The oracle6 compares every policy on test data and is NOT deployable. "
-            "The 6-policy timing sums all 6, not single random-policy time."
+            "Timing for oracle6 includes all six policy readouts; each other timing is individual."
         ),
     }
