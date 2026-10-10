@@ -119,6 +119,6 @@ if __name__ == "__main__":
     if args.memory_out:
         from pathlib import Path
         Path(args.memory_out).write_text(
-            json.dumps(report["memory"], indent=2, sort_keys=True) + "\\n", encoding="utf-8"
+            json.dumps(report["memory"], indent=2, sort_keys=True) + "\n", encoding="utf-8"
         )
     print(json.dumps(report, indent=2, sort_keys=True))
