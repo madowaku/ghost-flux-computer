@@ -71,9 +71,12 @@ def experiment(train_per_family: int = 60, test_per_family: int = 80):
     # A privileged oracle upper bound for the *available policies only*.
     # This is not a legal deployable baseline; it examines all policy costs.
     oracle_cost = 0
-    for idx, (n, edges) in enumerate(sets["modular_dense_mixture_unseen"]):
-        oracle_cost += min(policy_readout(n, edges, p, 8800 + idx).cost
+    oracle_rng = Random(9502)  # EXACT seed used for the pooled evaluate_meta_memory
+    for n, edges in sets["modular_dense_mixture_unseen"]:
+        trial_seed = oracle_rng.randrange(1 << 63)
+        oracle_cost += min(policy_readout(n, edges, p, trial_seed).cost
                            for p in POLICIES)
+    assert oracle_cost <= results["modular_dense_mixture_unseen"]["edge_visits"]["meta"]
     for n, edges in (matched_modular + matched_dense + shifted_grid + shifted_hub)[:20]:
         solution = certify(n, edges)
         for p in POLICIES:
