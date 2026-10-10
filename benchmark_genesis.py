@@ -85,7 +85,7 @@ def experiment(train_per_family: int = 12, test_per_family: int = 32,
         "is_unseen_weight_program": genesis.genome.weights not in INITIAL_WEIGHTS,
         "v0_4_meta_control": json.loads(meta.to_json()),
         "meta_training_seconds": meta_fit_seconds,
-        "measured_genesis_training_seconds": perf_counter() - t0 - meta_fit_seconds,
+        "measured_genesis_training_seconds": t1 - t0,
         "evaluations": evaluations,
         "exact_certificates_checked": checked,
         "caveat": (
