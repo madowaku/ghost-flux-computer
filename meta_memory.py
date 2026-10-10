@@ -213,9 +213,14 @@ def evaluate_meta_memory(
         "meta_vs_hub_savings_percent": (
             100 * (sums["hub"] - sums["meta"]) / sums["hub"] if sums["hub"] else 0.0
         ),
-        "extra_training_probe_visits_vs_random": extra_training,
-        "optimistic_proxy_break_even_graphs_vs_global": (
-            extra_training / (delta / count) if delta > 0 else None
+        "training_all_policy_probe_edge_visits": memory.training_probe_edge_visits,
+        "training_random_only_probe_edge_visits": memory.train_random_probe_edge_visits,
+        "additional_training_probes_vs_random_only": extra_training,
+        "additional_probe_visits_vs_global_erm": 0,
+        "amortization_note": (
+            "Global ERM and meta-ERM share the same training policy probes. "
+            "Additional feature extraction and split-search costs are NOT measured. "
+            "No valid total amortization break-even can yet be reported."
         ),
         "warning": "Only cycle-edge visits: not wall-clock speed, energy, or full computation cost.",
     }
